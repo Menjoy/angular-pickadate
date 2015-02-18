@@ -92,13 +92,13 @@
           weekStartsOn: '='
         },
         template:
-          '<div class="pickadate">' +
+          '<div class="pickadate" ng-if="showPicker" data-tr-click-else-where="hidePicker">' +
             '<div class="pickadate-header">' +
               '<div class="pickadate-controls">' +
-                '<a href="" class="pickadate-prev" ng-click="changeMonth(-1)" ng-show="allowPrevMonth">' +
+                '<a href="" class="pickadate-prev" ng-click="changeMonth($event, -1)" ng-show="allowPrevMonth">' +
                   $sce.trustAsHtml(i18n.t('prev')) +
                 '</a>' +
-                '<a href="" class="pickadate-next" ng-click="changeMonth(1)" ng-show="allowNextMonth">' +
+                '<a href="" class="pickadate-next" ng-click="changeMonth($event, 1)" ng-show="allowNextMonth">' +
                   $sce.trustAsHtml(i18n.t('next')) +
                 '</a>' +
               '</div>'+
@@ -129,6 +129,7 @@
               selectedDates = [],
               minDate, maxDate;
 
+          scope.showPicker = false;
           scope.currentDate = scope.defaultDate && dateUtils.stringToDate(scope.defaultDate);
 
           if (!angular.isNumber(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) {
@@ -140,6 +141,8 @@
             selectedDates = allowMultiple ? toggleDate(dateObj.date, selectedDates) : [dateObj.date];
             setViewValue(selectedDates);
           };
+
+          element.bind('click', togglePicker);
 
           ngModel.$render = function() {
             var firstSelectedDate;
@@ -169,7 +172,8 @@
             return date.classNames.concat(extraClasses);
           };
 
-          scope.changeMonth = function(offset) {
+          scope.changeMonth = function($event, offset) {
+            $event.stopPropagation();
             // If the current date is January 31th, setting the month to date.getMonth() + 1
             // sets the date to March the 3rd, since the date object adds 30 days to the current
             // date. Settings the date to the 2nd day of the month is a workaround to prevent this
@@ -259,6 +263,18 @@
             }
             return dateArray;
           }
+
+          function togglePicker(evt) {
+            evt.stopPropagation();
+            scope.showPicker = !scope.showPicker;
+            scope.$apply();
+          }
+
+          scope.hidePicker = function() {
+            scope.showPicker = false;
+            scope.$apply();            
+          }
+
         }
       };
     }]);
