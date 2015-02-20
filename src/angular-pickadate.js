@@ -89,7 +89,9 @@
           minDate: '=',
           maxDate: '=',
           disabledDates: '=',
-          weekStartsOn: '='
+          weekStartsOn: '=',
+          onDateChange: '=',
+          objectRef: '='
         },
         template:
           '<div class="pickadate" ng-if="showPicker" data-tr-click-else-where="hidePicker">' +
@@ -137,9 +139,13 @@
           }
 
           scope.setDate = function(dateObj) {
-            if (isOutOfRange(dateObj.dateObj) || isDateDisabled(dateObj.date)) return;
+            if (isOutCurrentView(dateObj.dateObj) || isDateDisabled(dateObj.date)) return;
             selectedDates = allowMultiple ? toggleDate(dateObj.date, selectedDates) : [dateObj.date];
             setViewValue(selectedDates);
+
+            if (scope.onDateChange) {
+              scope.onDateChange(selectedDates, scope.objectRef || null);
+            }
           };
 
           element.bind('click', togglePicker);
@@ -188,6 +194,10 @@
             return angular.toJson([scope.minDate, scope.maxDate, scope.disabledDates]);
           }, ngModel.$render);
 
+          scope.$watch('date', function(newValue, oldValue) {
+          	console.log('new ' + newValue);
+          })
+
           function render() {
             var initialDate   = new Date(scope.currentDate.getFullYear(), scope.currentDate.getMonth(), 1, 3),
                 currentMonth  = initialDate.getMonth() + 1,
@@ -208,7 +218,7 @@
                   date       = dateFilter(dateObj, 'yyyy-MM-dd'),
                   isDisabled = isDateDisabled(date);
 
-              if (isOutOfRange(dateObj) || isDisabled) {
+              if (isOutCurrentView(dateObj) || isDisabled) {
                 classNames.push('pickadate-disabled');
               } else {
                 classNames.push('pickadate-enabled');
@@ -246,7 +256,12 @@
           }
 
           function isOutOfRange(date) {
-            return date < minDate || date > maxDate || dateFilter(date, 'M') !== dateFilter(scope.currentDate, 'M');
+            // return date < minDate || date > maxDate || dateFilter(date, 'M') !== dateFilter(scope.currentDate, 'M');
+            return date < minDate || date > maxDate;
+          }
+
+          function isOutCurrentView(date) {
+          	return date < minDate || date > maxDate || dateFilter(date, 'M') !== dateFilter(scope.currentDate, 'M');
           }
 
           function isDateDisabled(date) {
@@ -265,15 +280,22 @@
           }
 
           function togglePicker(evt) {
-            evt.stopPropagation();
-            scope.showPicker = !scope.showPicker;
+          	if (!scope.showPicker) {
+          		evt.stopPropagation();
+          	}
+
+          	if (scope.date && !isOutCurrentView(scope.date)) {
+          		render();
+          	}
+
+            scope.showPicker = !scope.showPicker;         
             scope.$apply();
           }
 
           scope.hidePicker = function() {
             scope.showPicker = false;
             scope.$apply();            
-          }
+          };
 
         }
       };

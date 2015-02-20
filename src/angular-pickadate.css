@@ -68,6 +68,10 @@
   background-color: #b52a00;
 }
 
+.pickadate-cell .pickadate-active.pickadate-disabled {
+  opacity: 0.5 !important;
+}
+
 .pickadate-cell .pickadate-active {
   color: white;
 }
