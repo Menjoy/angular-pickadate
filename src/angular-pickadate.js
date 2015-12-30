@@ -194,10 +194,6 @@
             return angular.toJson([scope.minDate, scope.maxDate, scope.disabledDates]);
           }, ngModel.$render);
 
-          scope.$watch('date', function(newValue, oldValue) {
-          	console.log('new ' + newValue);
-          })
-
           function render() {
             var initialDate   = new Date(scope.currentDate.getFullYear(), scope.currentDate.getMonth(), 1, 3),
                 currentMonth  = initialDate.getMonth() + 1,
